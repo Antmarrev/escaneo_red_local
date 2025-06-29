@@ -24,7 +24,7 @@ import subprocess
 import platform
 import time
 
-subred_objetivo = "192.168.1.34/24" #subred del usuario
+subred_objetivo = "192.168.1.38/24" #subred del usuario
 puertos_a_escanear = [22, 80, 443, 3389] #puertos más comunes, se podría optimizar para escanear todos los puertos
 timeout_conexion = 0.5 #tiempo máximo de espera en segundos
 
@@ -38,7 +38,13 @@ def generar_ips(subred):
     Returns:
         list: Lista de direcciones IP como strings.
     """
-    pass
+    try:
+        red = ipaddress.ip_network(subred, strict=False)
+        lista_ips = [str(ip) for ip in red.hosts()]  # hosts() excluye la IP de red y broadcast
+        return lista_ips
+    except ValueError as e:
+        print(f"Error en la subred proporcionada: {e}")
+        return []
 
 def ping_host(ip):
     """
@@ -50,7 +56,24 @@ def ping_host(ip):
     Returns:
         bool: True si la IP responde, False si no.
     """
-    pass
+    sistema = platform.system() #detecta el sistema operativo
+
+    if sistema == "Windows":
+        comando = ["ping", "-n", "1", "-W", "1000", ip]
+    else: #Linux o Mac
+        comando = ["ping", "-c", "1", "-W", "1", ip]
+
+    try:
+        resultado = subprocess.run(
+            comando,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+        return resultado.returncode == 0
+    except Exception as e:
+        print(f"Error al hacer ping a {ip}: {e}")
+        return False
+
 
 def escanear_puertos(ip, lista_puertos):
     """
@@ -78,7 +101,11 @@ if __name__ == "__main__":
     """
     Bloque principal de ejecución del script de escaneo de red local.
     """
-
+    lista_ips = generar_ips(subred_objetivo)
+    print(f"IPs activas en {subred_objetivo}:")
+    for ip in lista_ips:
+        if ping_host(ip):
+            print(f"{ip} está activa")
     # Generar lista de IPs de la subred
     # TODO: llamar a generar_ips(SUBRED_OBJETIVO)
 
