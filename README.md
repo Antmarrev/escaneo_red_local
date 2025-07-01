@@ -23,11 +23,32 @@ Este script en Python permite realizar un escaneo básico de una red local (LAN)
 - Sistema operativo con soporte para comandos de red (funciona en Windows, Linux y macOS).
 - No requiere instalar librerías externas.
 
+## Ejemplo de uso
+
+Ejecuta el script desde la terminal con:
+
+python script.py
+
+El script te pedirá:
+
+-La subred a escanear:
+    Por ejemplo:
+    Introduce la subred a escanear (ejemplo 192.168.1.0/24): 192.168.1.0/24
+
+-Los puertos a escanear separados por comas:
+    Por ejemplo:
+    Introduce los puertos a escanear separados por comas (ejemplo 22,80,443): 22,80,443
+
+A continuación, el script mostrará en consola las IPs activas detectadas en tu red local y qué puertos están abiertos en cada una, de forma clara y ordenada.
+
+
 ## Estado del proyecto
 
 ✅ Documentación de requisitos  
 ✅ Diseño lógico en pseudocódigo  
-🔜 Desarrollo del script en curso (Fase 1: estructura básica)
+✅ Desarrollo del script completado  
+✅ Pruebas realizadas con éxito  
+✅ Listo para usar en entornos de práctica
 
 ## Autor
 

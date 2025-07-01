@@ -24,8 +24,8 @@ import subprocess
 import platform
 import time
 
-subred_objetivo = "192.168.1.38/24" #subred del usuario
-puertos_a_escanear = [22, 80, 443, 3389] #puertos más comunes, se podría optimizar para escanear todos los puertos
+subred_objetivo = "..." #subred del usuario
+puertos_a_escanear = [] 
 timeout_conexion = 0.5 #tiempo máximo de espera en segundos
 
 def generar_ips(subred):
@@ -59,8 +59,8 @@ def ping_host(ip):
     sistema = platform.system() #detecta el sistema operativo
 
     if sistema == "Windows":
-        comando = ["ping", "-n", "1", "-W", "1000", ip]
-    else: #Linux o Mac
+        comando = ["ping", "-n", "1", "-w", "1000", ip]
+    else: #Linux
         comando = ["ping", "-c", "1", "-W", "1", ip]
 
     try:
@@ -86,7 +86,18 @@ def escanear_puertos(ip, lista_puertos):
     Returns:
         list: Lista de puertos abiertos en la IP.
     """
-    pass
+    puertos_abiertos = []
+
+    for puerto in lista_puertos:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(timeout_conexion)
+        resultado = sock.connect_ex((ip, puerto))
+        if resultado == 0:
+            puertos_abiertos.append(puerto)
+        sock.close()
+
+    return puertos_abiertos
+
 
 def mostrar_resultados(resultados):
     """
@@ -95,25 +106,30 @@ def mostrar_resultados(resultados):
     Args:
         resultados (dict): Diccionario con IPs como claves y listas de puertos abiertos como valores.
     """
-    pass
+    for ip, puertos in resultados.items():
+        if puertos:
+            print(f"{ip} - puertos abiertos: {puertos}")
+        else:
+            print(f"{ip} - sin puertos abiertos detectados")
 
 if __name__ == "__main__":
     """
     Bloque principal de ejecución del script de escaneo de red local.
     """
+
+    subred_objetivo = input("Introduce la subred a escanear (ejemplo 192.168.1.0/24): ").strip()
+    puertos_input = input("Introduce los puertos a escanear separados por comas (ejemplo 22,80,443): ").strip()
+    puertos_a_escanear = [int(p.strip()) for p in puertos_input.split(",") if p.strip().isdigit()]
+
     lista_ips = generar_ips(subred_objetivo)
-    print(f"IPs activas en {subred_objetivo}:")
+    print(f"Escaneando puertos en dispositivos activos en {subred_objetivo}...\n")
+    resultados = {}
+
     for ip in lista_ips:
         if ping_host(ip):
-            print(f"{ip} está activa")
-    # Generar lista de IPs de la subred
-    # TODO: llamar a generar_ips(SUBRED_OBJETIVO)
+            print(f"{ip} está activa, escaneando puertos...")
+            puertos_abiertos = escanear_puertos(ip, puertos_a_escanear)
+            resultados[ip] = puertos_abiertos
 
-    # Comprobar qué IPs están activas
-    # TODO: llamar a ping_host(ip) para cada IP generada
-
-    # Escanear puertos de las IPs activas
-    # TODO: llamar a escanear_puertos(ip, PUERTOS_A_ESCANEAR)
-
-    # Mostrar resultados
-    # TODO: llamar a mostrar_resultados(resultados)
+    print("\nResultados del escaneo:")
+    mostrar_resultados(resultados)
